@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-and-test:
+    name: Check, Test & Validate
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev pkg-config libclang-dev python3
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+
+      - name: Verify formatting
+        run: cargo fmt --all -- --check
+
+      - name: Cargo check
+        run: cargo check --workspace --locked
+
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Cargo test
+        run: cargo test --workspace --locked
+
+      - name: Validate thermal policy & parity
+        run: |
+          python3 tests/kernel_pure.py
+          python3 tests/policy_parity.py
+          python3 tests/turbo_policy.py
