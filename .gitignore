@@ -1,0 +1,51 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Linux Kernel & Kbuild artifacts
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.o
+*.o.d
+*.cmd
+.*.cmd
+*.o.cmd
+*.ko.cmd
+modules.order
+Module.symvers
+Module.markers
+.tmp_versions/
+*.rmeta
+/kernel/build/
+/kernel/generated/
+*.a
+
+# DKMS & Packaging
+dkms.tar.gz
+/packaging/out/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Test output & local transient artifacts
+/artifacts/
+*.log
+*.pid
+
+# IDEs & Editor metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
