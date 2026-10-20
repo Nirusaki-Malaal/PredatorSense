@@ -1,0 +1,3 @@
+# Kbuild reads this file inside the target kernel build. DKMS invokes Makefile.
+obj-m := predatrix_sense.o
+predatrix_sense-y := driver.o
