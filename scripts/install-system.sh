@@ -38,18 +38,12 @@ if [[ "$mode" == kernel ]]; then
     if [[ "$key" == /* && -f "$key" ]]; then chmod 600 "$key"; fi
     printf '%s\n' "$cert" > "$state_dir/signing-certificate.path"
     module_source=/usr/src/predatrix_sense-$version
-    if [[ -d "$module_source" ]]; then
-        for file in "$source_dir/kernel/"*.rs "$source_dir/kernel/ffi.h" "$source_dir/kernel/Makefile" "$source_dir/kernel/Kbuild" "$source_dir/kernel/dkms.conf"; do
-            cmp -s "$file" "$module_source/$(basename -- "$file")" || { echo 'Registered source differs. Increment the release version or uninstall this release before replacing it.' >&2; exit 1; }
-        done
-    else
-        install -d -m 755 "$module_source"
-        install -m 644 "$source_dir/kernel/"*.rs "$source_dir/kernel/ffi.h" "$source_dir/kernel/Makefile" "$source_dir/kernel/Kbuild" "$source_dir/kernel/dkms.conf" "$module_source/"
-        install -m 755 "$source_dir/scripts/generate-bindings.sh" "$source_dir/tests/abi_check.py" "$module_source/"
-    fi
+    install -d -m 755 "$module_source"
+    install -m 644 "$source_dir/kernel/"*.rs "$source_dir/kernel/ffi.h" "$source_dir/kernel/Makefile" "$source_dir/kernel/Kbuild" "$source_dir/kernel/dkms.conf" "$module_source/"
+    install -m 755 "$source_dir/scripts/generate-bindings.sh" "$source_dir/tests/abi_check.py" "$module_source/"
     if ! dkms status -m predatrix_sense -v "$version" | grep -q .; then dkms add -m predatrix_sense -v "$version"; fi
     dkms build -m predatrix_sense -v "$version" -k "$kernel"
-    dkms install -m predatrix_sense -v "$version" -k "$kernel"
+    dkms install --force -m predatrix_sense -v "$version" -k "$kernel"
     signer=$(modinfo -k "$kernel" -F signer predatrix_sense)
     [[ -n "$signer" ]] || { echo 'DKMS did not sign the module. Check its signing policy before activation.' >&2; exit 1; }
     printf 'Installed module signer: %s\n' "$signer"
@@ -91,10 +85,21 @@ account_group=$(id -gn "$account")
 install -d -o "$account" -g "$account_group" "$account_home/.config/autostart"
 backup "$account_home/.config/autostart/predator-sense-tray.desktop"
 install -m 644 -o "$account" -g "$account_group" "$source_dir/packaging/predator-sense-tray.desktop" "$account_home/.config/autostart/"
+if [[ "$mode" == kernel && "$kernel" == "$(uname -r)" ]]; then
+    if lsmod | grep -q '^predatrix_sense\b'; then
+        echo "Reloading predatrix_sense kernel module..."
+        modprobe -r predatrix_sense 2>/dev/null || true
+        modprobe predatrix_sense 2>/dev/null || true
+    else
+        echo "Loading predatrix_sense kernel module..."
+        modprobe predatrix_sense 2>/dev/null || true
+    fi
+fi
 systemctl daemon-reload
 systemctl enable --now predator-sense.service
-printf '%s\n' 'Installed. Log out and back in for group permissions and tray autostart.' 'Open Predator Sense from your application menu. GNOME requires a StatusNotifier/AppIndicator extension.'
-if [[ "$mode" == kernel ]]; then
-    echo 'No running module was unloaded. The installed predatrix_sense replacement takes effect on the next module load/reboot.'
-    echo 'If migrating from acer_wmi, use scripts/activate-kernel.sh --next-boot and read README.md.'
-fi
+systemctl restart predator-sense.service
+for _ in {1..30}; do
+    if [[ -S /run/predator-sense/control.sock ]]; then break; fi
+    sleep 0.1
+done
+printf '%s\n' 'Installed. Binaries updated and predator-sense service active.' 'Log out and back in for group permissions and tray autostart.' 'Open Predator Sense from your application menu.'
