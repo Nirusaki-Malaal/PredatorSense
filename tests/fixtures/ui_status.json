@@ -1,0 +1,28 @@
+{
+  "model": "Predator PHN16-71",
+  "backend": "PHN16-71 WMI",
+  "values": {
+    "profile": "balanced",
+    "fan_speed": "0,0",
+    "thermal_fan_mode": "auto",
+    "fan_curve_profile": "conservative",
+    "fan_curve_points": "55:0:0,65:35:35,75:55:60,85:80:85,90:100:100",
+    "four_zone_mode": "4,3,73,1,68,221,204",
+    "per_zone_mode": "ff0000,00ff00,0000ff,ffffff,73",
+    "battery_limiter": "1",
+    "backlight_timeout": "1",
+    "boot_animation_sound": "0",
+    "lcd_override": "0",
+    "battery_calibration": "0",
+    "usb_charging": "20"
+  },
+  "choices": [
+    "low-power",
+    "quiet",
+    "balanced",
+    "balanced-performance",
+    "performance"
+  ],
+  "saved": {},
+  "errors": []
+}
