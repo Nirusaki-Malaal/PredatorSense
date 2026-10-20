@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Predator Sense Tray
+Comment=Open Predator Sense from the system tray
+Exec=predator-tray
+Icon=predator-sense
+Terminal=false
+X-GNOME-Autostart-enabled=true

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Predator Sense
+Comment=Performance, cooling and keyboard control for Acer laptops
+Exec=predator-sense
+Icon=predator-sense
+Terminal=false
+Categories=Settings;HardwareSettings;
+StartupNotify=true

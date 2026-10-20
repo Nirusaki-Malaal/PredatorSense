@@ -1,0 +1,18 @@
+[package]
+name = "predator-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+[dependencies]
+predator-core.workspace = true
+serde_json.workspace = true
+gtk = { package = "gtk4", version = "0.11", features = ["v4_10"] }
+ksni = { version = "0.3", default-features = false, features = ["blocking", "async-io"] }
+[[bin]]
+name = "predator-sense"
+path = "src/main.rs"
+[[bin]]
+name = "predator-tray"
+path = "src/tray.rs"
