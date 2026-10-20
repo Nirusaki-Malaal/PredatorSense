@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Execute the real gaming controller against a recording firmware transport."""
 import pathlib
+import shutil
 import subprocess
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+rustc = shutil.which('rustc') or 'rustc'
 source = r'''
 #![allow(dead_code, non_camel_case_types, unused_unsafe)]
 extern crate self as kernel;
@@ -88,5 +90,5 @@ fn turbo_does_not_skip_custom_curve_updates() {
 with tempfile.TemporaryDirectory(prefix='predator-turbo-policy-') as directory:
     directory = pathlib.Path(directory)
     (directory / 'test.rs').write_text(source)
-    subprocess.run(['/usr/bin/rustc', '--edition=2021', '--test', directory / 'test.rs', '-o', directory / 'test'], check=True)
+    subprocess.run([rustc, '--edition=2021', '--test', directory / 'test.rs', '-o', directory / 'test'], check=True)
     subprocess.run([directory / 'test'], check=True)

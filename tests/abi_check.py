@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Compare Rust bindgen layouts with the target kernel's C compiler, never guess."""
-import argparse, pathlib, subprocess, tempfile, os
+import argparse, os, pathlib, shutil, subprocess, tempfile
 parser=argparse.ArgumentParser();parser.add_argument('headers',type=pathlib.Path);parser.add_argument('bindings',type=pathlib.Path);args=parser.parse_args()
 root=pathlib.Path(__file__).resolve().parents[1]
 fields={
@@ -33,8 +33,10 @@ with tempfile.TemporaryDirectory(prefix='predatrix-abi-') as directory:
  headers=args.headers.resolve();flags=['-std=gnu11','-fcf-protection=branch','-D__KERNEL__','-DMODULE','-funsigned-char','-fshort-wchar','-fms-extensions','-O2']
  for path in ['arch/x86/include','arch/x86/include/generated','include','arch/x86/include/uapi','arch/x86/include/generated/uapi','include/uapi','include/generated/uapi']:flags+=['-I'+str(headers/path)]
  for path in ['include/linux/compiler-version.h','include/linux/kconfig.h','include/linux/compiler_types.h']:flags+=['-include',str(headers/path)]
- subprocess.run([os.environ.get('CC','/usr/bin/cc'),*flags,str(directory/'probe.c'),'-o',str(directory/'c')],check=True)
- subprocess.run(['/usr/bin/rustc','--edition=2021','-Awarnings',str(directory/'probe.rs'),'-o',str(directory/'rust')],check=True)
+ cc = os.environ.get('CC') or shutil.which('cc') or 'cc'
+ rustc = os.environ.get('RUSTC') or shutil.which('rustc') or 'rustc'
+ subprocess.run([cc,*flags,str(directory/'probe.c'),'-o',str(directory/'c')],check=True)
+ subprocess.run([rustc,'--edition=2021','-Awarnings',str(directory/'probe.rs'),'-o',str(directory/'rust')],check=True)
  expected=subprocess.check_output([directory/'c'],text=True);actual=subprocess.check_output([directory/'rust'],text=True)
  if expected!=actual:
   import difflib

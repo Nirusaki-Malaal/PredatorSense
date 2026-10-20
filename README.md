@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/predator-sense.svg" width="96" alt="Predator Sense Logo">
+</p>
+
 # Predator Sense
 
 A native Rust kernel driver, daemon, and GTK4 control studio for the **Acer Predator Helios Neo 16 (`PHN16-71`)** by Nirusaki.
@@ -21,24 +25,44 @@ Stripped down to specialize exclusively on the PHN16-71 hardware platform. Elimi
 
 ## Install on Linux
 
-Open a terminal and paste this without `sudo`:
+Open a terminal and run the interactive all-in-one menu without `sudo`:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | bash
 ```
 
-The universal source installer checks host hardware compatibility, downloads the source tree, builds the Rust workspace, and provisions the signed DKMS v3 kernel module along with the daemon, tray indicator, and GTK4 studio. Sudo is requested only when installing system services and kernel components.
+The bootstrap script provides an interactive terminal menu:
+```text
+========================================================================
+     PredatorSense Control Suite — Acer Predator Helios Neo 16
+========================================================================
+  1) Install PredatorSense (Kernel module, daemon, GUI & tray)
+  2) Update existing installation (Rebuild & refresh binaries)
+  3) Uninstall PredatorSense (Restore backups & remove services)
+  4) Run preflight system diagnostic check
+  5) Exit
+========================================================================
+```
 
-Pass options directly to the bootstrap script:
+### Direct Script Commands
+
+Execute actions non-interactively via command-line flags:
+
 ```sh
-# Automatically resolve and install package dependencies (apt, pacman, dnf, zypper)
-curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | sh -s -- --install-deps
+# Fresh Installation (with automatic dependency resolution)
+curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | bash -s -- --install --install-deps
 
-# Userspace-only install (skips DKMS build if running over an existing driver)
-curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | sh -s -- --userspace-only
+# Update existing installation (preserves your custom fan curves & lighting preferences)
+curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | bash -s -- --update
+
+# Complete uninstallation & rollback to system defaults
+curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | bash -s -- --uninstall
+
+# Userspace-only install (skips DKMS kernel module if using an already active driver)
+curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/bootstrap.sh | bash -s -- --userspace-only
 ```
 
-For manual build steps and post-install management, see [Documentation.md](Documentation.md#installation--deployment).
+For manual build steps and post-install management, see [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md#installation-updating--uninstallation).
 
 ## Features
 
@@ -63,8 +87,8 @@ For manual build steps and post-install management, see [Documentation.md](Docum
 
 ## AI usage disclosure
 
-Reverse engineering, protocol validation, and Rust modernization were developed with AI assistance using advanced agentic models. Hardware boundaries, WMI buffers, and ACPI execution paths have been rigorously audited and test-verified against live hardware. See [Documentation.md](Documentation.md#architecture--safety-audit).
+Reverse engineering, protocol validation, and Rust modernization were developed with AI assistance using advanced agentic models. Hardware boundaries, WMI buffers, and ACPI execution paths have been rigorously audited and test-verified against live hardware. See [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md#hardware-safety--concurrency-audit).
 
 ## License
 
-GPL-3.0-or-later. Copyright (C) 2026 Nirusaki. Predator Sense is independent of Acer Inc. Read [Documentation.md](Documentation.md) for full architecture specifications, protocol formats, and hardware internals.
+GPL-3.0-or-later. Copyright (C) 2026 Nirusaki. Predator Sense is independent of Acer Inc. Read [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) for full architecture specifications, protocol formats, and hardware internals.
