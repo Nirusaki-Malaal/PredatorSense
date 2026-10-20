@@ -293,7 +293,10 @@ fn diagnostics(client: &Client) -> gtk::Box {
     note.set_wrap(true);
     card.append(&note);
     page.append(&card);
-    let card = client::card("Hardware Architecture", "Hardware controls specialized exclusively for Acer Predator Helios Neo 16 (PHN16-71).");
+    let card = client::card(
+        "Hardware Architecture",
+        "Hardware controls specialized exclusively for Acer Predator Helios Neo 16 (PHN16-71).",
+    );
     let note = label("Driver policy and parsing use safe Rust. Kernel C calls are isolated and audited; no manual unsafe Send/Sync implementations are used.", "muted");
     note.set_wrap(true);
     card.append(&note);
