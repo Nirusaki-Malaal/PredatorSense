@@ -1,0 +1,34 @@
+[Unit]
+Description=Predator PHN16-71 hardware daemon
+After=systemd-modules-load.service
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=root
+Group=predatrix_sense
+UMask=0007
+RuntimeDirectory=predator-sense
+RuntimeDirectoryMode=0750
+StateDirectory=predator-sense
+StateDirectoryMode=0700
+ExecStart=/usr/local/bin/predator-daemon
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=5
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+RestrictRealtime=true
+LockPersonality=true
+MemoryHigh=32M
+MemoryMax=64M
+TasksMax=16
+LimitNOFILE=64
+
+[Install]
+WantedBy=multi-user.target
