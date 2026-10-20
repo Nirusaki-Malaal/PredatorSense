@@ -69,7 +69,7 @@ if [[ -z "$action" ]]; then
     if [[ -t 0 ]]; then
         cat <<'MENU'
 ========================================================================
-     PredatorSense Control Suite — Acer Predator Helios Neo 16
+     PredatorSense Control Suite - Acer Predator Helios Neo 16
 ========================================================================
   1) Install PredatorSense (Kernel module, daemon, GUI & tray)
   2) Update existing installation (Rebuild & refresh binaries)

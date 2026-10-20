@@ -6,7 +6,7 @@
 
 A native Rust kernel driver, daemon, and GTK4 control studio for the **Acer Predator Helios Neo 16 (`PHN16-71`)** by Nirusaki.
 
-Stripped down to specialize exclusively on the PHN16-71 hardware platform. Eliminates legacy multi-generation quirks, dead abstraction layers, and runtime overhead—yielding an ultra-responsive, rock-solid stack with a resident memory footprint of just **~60 MB** (compared to **~1 GB** for the official Windows PredatorSense app and **~200 MB** for the legacy Avalonia/.NET C# port).
+Stripped down to specialize exclusively on the PHN16-71 hardware platform. Eliminates legacy multi-generation quirks, dead abstraction layers, and runtime overhead, yielding an ultra-responsive, rock-solid stack with a resident memory footprint of just **~60 MB** (compared to **~1 GB** for the official Windows PredatorSense app and **~200 MB** for the legacy Avalonia/.NET C# port).
 
 ## Screenshots
 
@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/Nirusaki-Malaal/PredatorSense/main/
 The bootstrap script provides an interactive terminal menu:
 ```text
 ========================================================================
-     PredatorSense Control Suite — Acer Predator Helios Neo 16
+     PredatorSense Control Suite - Acer Predator Helios Neo 16
 ========================================================================
   1) Install PredatorSense (Kernel module, daemon, GUI & tray)
   2) Update existing installation (Rebuild & refresh binaries)
@@ -66,7 +66,7 @@ For manual build steps and post-install management, see [docs/DOCUMENTATION.md](
 
 ## Features
 
-• **Physical Performance Mode Button**: Fully functional via kernel netlink uevent dispatch—cycling modes (Quiet, Balanced, Performance, Turbo) instantly without dropped input events.  
+• **Physical Performance Mode Button**: Fully functional via kernel netlink uevent dispatch, cycling modes (Quiet, Balanced, Performance, Turbo) instantly without dropped input events.  
 • **Dynamic Fan Curves & Turbo Mode**: Custom and automatic fan curves remain fully active during Turbo mode; fan speeds scale intelligently according to temperature instead of being locked to a harsh 100% duty cycle.  
 • **4-Zone RGB Keyboard Lighting**: Real-time animated canvas preview synchronized to the compositor frame clock, custom zone color pickers, 8 hardware lighting effects, speed/brightness controls, and persistent settings.  
 • **Background System Tray**: Lightweight `ksni` status indicator (`predator-tray`) for instant profile switching, fan telemetry monitoring, and background operation.  

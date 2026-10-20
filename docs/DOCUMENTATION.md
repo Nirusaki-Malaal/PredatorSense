@@ -165,8 +165,8 @@ The driver exposes two distinct sysfs device groups:
 - `performance_mode`: Current thermal profile (`quiet`, `balanced`, `performance`, `turbo`).
 - `cpu_fan_mode`: CPU fan mode (`auto`, `fixed`, `custom`).
 - `gpu_fan_mode`: GPU fan mode (`auto`, `fixed`, `custom`).
-- `cpu_fan_speed`: Current/target CPU fan percentage (0–100%).
-- `gpu_fan_speed`: Current/target GPU fan percentage (0–100%).
+- `cpu_fan_speed`: Current/target CPU fan percentage (0-100%).
+- `gpu_fan_speed`: Current/target GPU fan percentage (0-100%).
 - `battery_charge_limit`: Battery conservation toggle (`0` or `1`, capping charge at 80%).
 - `usb_charging`: Power-off USB charging toggle (`0` or `1`).
 - `lcd_overdrive`: Display panel response overdrive (`0` or `1`).
@@ -174,8 +174,8 @@ The driver exposes two distinct sysfs device groups:
 
 #### 2. Keyboard Lighting (`/sys/bus/platform/devices/four_zoned_kb/`)
 - `mode`: Active lighting mode (`static`, `breathing`, `neon`, `wave`, `shifting`, `zoom`, `meteor`, `twinkling`).
-- `brightness`: Global LED brightness (0–100%).
-- `speed`: Effect animation speed (0–100%).
+- `brightness`: Global LED brightness (0-100%).
+- `speed`: Effect animation speed (0-100%).
 - `direction`: Effect flow direction (`left_to_right` or `right_to_left`).
 - `zone1` to `zone4`: Per-zone 24-bit RGB hex colors (`#RRGGBB`).
 
