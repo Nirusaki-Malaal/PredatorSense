@@ -170,17 +170,6 @@ fn build(app: &gtk::Application) {
         button.connect_clicked(move |_| connection.send(request.clone()));
         footer.append(&button);
     }
-    let tray = gtk::Button::builder()
-        .icon_name("view-more-symbolic")
-        .tooltip_text("Start tray; closing this window then frees the GTK process")
-        .build();
-    let connection = client.clone();
-    tray.connect_clicked(move |_| {
-        if let Err(error) = launcher::launch("predator-tray") {
-            connection.error(&error);
-        }
-    });
-    footer.append(&tray);
     root.append(&footer);
     window.set_child(Some(&root));
     let (samples, requests) = mpsc::sync_channel(1);
@@ -290,14 +279,6 @@ fn diagnostics(client: &Client) -> gtk::Box {
     text.set_wrap(true);
     card.append(&text);
     let note = label("Disabling the EC interrupt blocks mode-button events. Avoid wakeup workarounds that disable GPE 0x6E on this laptop.", "muted");
-    note.set_wrap(true);
-    card.append(&note);
-    page.append(&card);
-    let card = client::card(
-        "Hardware Architecture",
-        "Hardware controls specialized exclusively for Acer Predator Helios Neo 16 (PHN16-71).",
-    );
-    let note = label("Driver policy and parsing use safe Rust. Kernel C calls are isolated and audited; no manual unsafe Send/Sync implementations are used.", "muted");
     note.set_wrap(true);
     card.append(&note);
     page.append(&card);
