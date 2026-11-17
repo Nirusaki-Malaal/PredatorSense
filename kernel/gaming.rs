@@ -87,6 +87,16 @@ pub(crate) fn curve_tick(state: &mut State) -> Result<()> {
     }
     Ok(())
 }
+pub(crate) fn get_profile(state: &mut State) -> Result<u8> {
+    if let Some(profile) = state.current_profile {
+        return Ok(profile);
+    }
+    let profile = state.endpoints.misc_get(11)?;
+    if matches!(profile, 0 | 1 | 4 | 5 | 6) {
+        state.current_profile = Some(profile);
+    }
+    Ok(profile)
+}
 pub(crate) fn set_profile(state: &mut State, profile: u8) -> Result<()> {
     if !matches!(profile, 0 | 1 | 4 | 5 | 6) {
         return Err(-22);
@@ -95,6 +105,7 @@ pub(crate) fn set_profile(state: &mut State, profile: u8) -> Result<()> {
         return Err(-95);
     }
     state.endpoints.misc_set(11, profile)?;
+    state.current_profile = Some(profile);
     if profile != state.maximum_profile {
         state.previous_profile = profile;
     }
@@ -312,7 +323,11 @@ pub(crate) fn keyboard_set(state: &mut State, mut keyboard: KeyboardState) -> Re
 }
 pub(crate) fn save_power_snapshot(state: &mut State, index: usize) -> Result<()> {
     let mut snapshot = state.power_states[index];
-    snapshot.thermal_profile = state.endpoints.misc_get(11)? as i32;
+    let current = state.endpoints.misc_get(11)?;
+    if matches!(current, 0 | 1 | 4 | 5 | 6) {
+        state.current_profile = Some(current);
+    }
+    snapshot.thermal_profile = current as i32;
     if let Ok(timeout) = timeout_get(state) {
         snapshot.backlight_timeout = timeout as i32;
     }
@@ -330,9 +345,11 @@ pub(crate) fn restore_power_snapshot(state: &mut State, index: usize) -> Result<
     if !snapshot.valid() {
         return Err(-22);
     }
+    state.current_profile = None;
     state
         .endpoints
         .misc_set(11, snapshot.thermal_profile as u8)?;
+    state.current_profile = Some(snapshot.thermal_profile as u8);
     let _ = timeout_set(state, snapshot.backlight_timeout != 0);
     state.cpu_speed = snapshot.cpu_fan_speed;
     state.gpu_speed = snapshot.gpu_fan_speed;
@@ -348,5 +365,11 @@ pub(crate) fn restore_power_snapshot(state: &mut State, index: usize) -> Result<
     };
     state.point_count = snapshot.custom_fan_curve_points as usize;
     state.curve_points = snapshot.custom_fan_curve;
-    apply_fan_policy(state)
+    let result = apply_fan_policy(state);
+    if !state.profile_device().is_null() {
+        unsafe {
+            ffi::platform_profile_notify(state.profile_device());
+        }
+    }
+    result
 }

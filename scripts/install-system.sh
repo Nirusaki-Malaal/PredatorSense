@@ -42,7 +42,7 @@ if [[ "$mode" == kernel ]]; then
     install -m 644 "$source_dir/kernel/"*.rs "$source_dir/kernel/ffi.h" "$source_dir/kernel/Makefile" "$source_dir/kernel/Kbuild" "$source_dir/kernel/dkms.conf" "$module_source/"
     install -m 755 "$source_dir/scripts/generate-bindings.sh" "$source_dir/tests/abi_check.py" "$module_source/"
     if ! dkms status -m predatrix_sense -v "$version" | grep -q .; then dkms add -m predatrix_sense -v "$version"; fi
-    dkms build -m predatrix_sense -v "$version" -k "$kernel"
+    dkms build --force -m predatrix_sense -v "$version" -k "$kernel"
     dkms install --force -m predatrix_sense -v "$version" -k "$kernel"
     signer=$(modinfo -k "$kernel" -F signer predatrix_sense)
     [[ -n "$signer" ]] || { echo 'DKMS did not sign the module. Check its signing policy before activation.' >&2; exit 1; }
