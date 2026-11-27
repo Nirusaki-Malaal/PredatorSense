@@ -23,7 +23,10 @@ unsafe extern "C" fn profile_get(
     _: *mut ffi::device,
     value: *mut ffi::platform_profile_option,
 ) -> c_int {
-    match crate::with_state(|state| state.endpoints.misc_get(11)) {
+    // Serve the cached thermal profile instead of calling WMI misc_get(11) on
+    // every sysfs read: PHN16-71 firmware handles that call in BIOS SMM,
+    // stalling all CPUs for ~5-6 ms and causing audio underruns when polled.
+    match crate::with_state(gaming::get_profile) {
         Ok(profile) => {
             let profile = match profile {
                 6 => ffi::PLATFORM_PROFILE_LOW_POWER,
@@ -196,6 +199,11 @@ pub(crate) fn register(state: &mut State) -> Result<()> {
                     state.supported_profiles = raw;
                     state.maximum_profile = maximum;
                     state.previous_profile = previous;
+                    state.current_profile = state
+                        .endpoints
+                        .misc_get(11)
+                        .ok()
+                        .filter(|profile| matches!(profile, 0 | 1 | 4 | 5 | 6));
                     state.profile_device.store(device, Ordering::Relaxed);
                     break;
                 }
@@ -235,6 +243,7 @@ pub(crate) fn register(state: &mut State) -> Result<()> {
 }
 pub(crate) fn unregister(state: &mut State) {
     state.ready = false;
+    state.current_profile = None;
     sysfs::remove(state);
     let input = state.input.swap(ptr::null_mut(), Ordering::Relaxed);
     if !input.is_null() {
@@ -263,6 +272,11 @@ pub(crate) fn suspend(state: &mut State) -> Result<()> {
 }
 pub(crate) fn resume(state: &mut State) -> Result<()> {
     state.suspended = false;
+    state.current_profile = state
+        .endpoints
+        .misc_get(11)
+        .ok()
+        .filter(|profile| matches!(profile, 0 | 1 | 4 | 5 | 6));
     gaming::apply_fan_policy(state)?;
     if state.keyboard_valid {
         gaming::keyboard_set(state, state.keyboard)?;

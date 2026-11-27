@@ -19,24 +19,28 @@ mod ffi {
 }
 mod parameters { pub fn cycle_profiles() -> bool { true } }
 mod transport {
-    use std::sync::{Mutex, atomic::{AtomicU8, Ordering}};
+    use std::sync::{Mutex, atomic::{AtomicU8, AtomicUsize, Ordering}};
     pub type Result<T> = core::result::Result<T, i32>;
     pub const ACTION: usize = 0;
     pub const GAMING: usize = 1;
     pub const BATTERY: usize = 2;
     pub struct Endpoints {
         pub profile: AtomicU8,
+        pub misc_get_calls: AtomicUsize,
         pub calls: Mutex<Vec<(u32, Vec<u8>)>>,
     }
     impl Endpoints {
-        pub const fn empty() -> Self { Self { profile: AtomicU8::new(1), calls: Mutex::new(Vec::new()) } }
+        pub const fn empty() -> Self { Self { profile: AtomicU8::new(1), misc_get_calls: AtomicUsize::new(0), calls: Mutex::new(Vec::new()) } }
         pub fn procedure(&self, _: usize, method: u32, input: &[u8]) -> Result<()> {
             self.calls.lock().unwrap().push((method, input.to_vec())); Ok(())
         }
         pub fn invoke(&self, _: usize, _: u32, _: &[u8], _: usize) -> Result<Reply> { Ok(Reply) }
         pub fn number64(&self, _: usize, _: u32, _: u64) -> Result<u64> { Ok(1) }
         pub fn system_info(&self, _: u32) -> Result<u64> { Ok(65 << 8) }
-        pub fn misc_get(&self, _: u8) -> Result<u8> { Ok(self.profile.load(Ordering::Relaxed)) }
+        pub fn misc_get(&self, _: u8) -> Result<u8> {
+            self.misc_get_calls.fetch_add(1, Ordering::Relaxed);
+            Ok(self.profile.load(Ordering::Relaxed))
+        }
         pub fn misc_set(&self, _: u8, value: u8) -> Result<()> { self.profile.store(value, Ordering::Relaxed); Ok(()) }
     }
     pub struct Reply;
@@ -85,6 +89,33 @@ fn turbo_does_not_skip_custom_curve_updates() {
     state.endpoints.calls.lock().unwrap().clear();
     gaming::curve_tick(&mut state).unwrap();
     assert!(!state.endpoints.calls.lock().unwrap().is_empty());
+}
+#[test]
+fn profile_reads_use_cache_and_stay_in_sync() {
+    use std::sync::atomic::Ordering;
+    let mut state = state::State::new();
+    state.supported_profiles = (1 << 0) | (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6);
+    assert_eq!(gaming::get_profile(&mut state).unwrap(), 1);
+    assert_eq!(state.endpoints.misc_get_calls.load(Ordering::Relaxed), 1);
+    for _ in 0..100 {
+        assert_eq!(gaming::get_profile(&mut state).unwrap(), 1);
+    }
+    assert_eq!(state.endpoints.misc_get_calls.load(Ordering::Relaxed), 1);
+    gaming::set_profile(&mut state, 4).unwrap();
+    assert_eq!(gaming::get_profile(&mut state).unwrap(), 4);
+    assert_eq!(state.endpoints.misc_get_calls.load(Ordering::Relaxed), 1);
+    gaming::cycle_profile(&mut state).unwrap();
+    let reads_after_cycle = state.endpoints.misc_get_calls.load(Ordering::Relaxed);
+    assert_eq!(gaming::get_profile(&mut state).unwrap(), 5);
+    assert_eq!(state.endpoints.misc_get_calls.load(Ordering::Relaxed), reads_after_cycle);
+    state.power_states[0].thermal_profile = 6;
+    gaming::restore_power_snapshot(&mut state, 0).unwrap();
+    assert_eq!(gaming::get_profile(&mut state).unwrap(), 6);
+    assert_eq!(state.endpoints.misc_get_calls.load(Ordering::Relaxed), reads_after_cycle);
+    state.current_profile = None;
+    state.endpoints.profile.store(0, Ordering::Relaxed);
+    assert_eq!(gaming::get_profile(&mut state).unwrap(), 0);
+    assert_eq!(state.endpoints.misc_get_calls.load(Ordering::Relaxed), reads_after_cycle + 1);
 }
 '''.replace('@ROOT@', str(ROOT))
 with tempfile.TemporaryDirectory(prefix='predator-turbo-policy-') as directory:
